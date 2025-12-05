@@ -7,6 +7,7 @@ import 'pages/loginpage.dart';
 import 'pages/registerpage.dart';
 import 'pages/user_settings_page.dart';
 import 'providers/auth_provider.dart';
+import 'providers/chat_provider.dart'; // Import the new provider
 
 void main() {
   runApp(const AmbaLearn());
@@ -17,8 +18,12 @@ class AmbaLearn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AuthProvider(),
+    // We change ChangeNotifierProvider to MultiProvider to hold multiple states
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => ChatProvider()),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: "AmbaLearn",

@@ -24,9 +24,9 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF252525),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Center(
           child: Container(
             width: 400,
             padding: const EdgeInsets.all(30),
@@ -39,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: .5),
+                  color: Colors.black,
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),

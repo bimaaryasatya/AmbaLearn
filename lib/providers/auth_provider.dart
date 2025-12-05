@@ -28,7 +28,7 @@ class AuthProvider extends ChangeNotifier {
 
   String? validatePassword(String password) {
     if (password.isEmpty) return "Password wajib diisi";
-    if (password.length < 6) return "Password minimal 6 karakter";
+    //if (password.length < 6) return "Password minimal 6 karakter";
     return null;
   }
 
