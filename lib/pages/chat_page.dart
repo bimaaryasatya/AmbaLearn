@@ -6,7 +6,8 @@ import '../providers/auth_provider.dart';
 import '../widgets/chat_bubble.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
-import '../providers/language_provider.dart';
+
+import '../l10n/app_localizations.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -116,9 +117,7 @@ class _ChatPageState extends State<ChatPage> {
                   itemBuilder: (context, index) {
                     if (index == chat.messages.length) {
                       return ChatBubble(
-                        message: context.watch<LanguageProvider>().getText(
-                          'thinking',
-                        ),
+                        message: AppLocalizations.of(context)!.thinking,
                         isUser: false,
                       );
                     }
@@ -164,7 +163,7 @@ class _ChatPageState extends State<ChatPage> {
             ),
             const SizedBox(height: 24),
             Text(
-              "${context.watch<LanguageProvider>().getText('welcome_back')} $username! 👋",
+              "${AppLocalizations.of(context)!.welcomeBack} $username! 👋",
               style: theme.textTheme.headlineMedium,
               textAlign: TextAlign.center,
             ),
@@ -243,9 +242,7 @@ class _ChatPageState extends State<ChatPage> {
                   onSubmitted: (_) => _sendMessage(chat),
                   style: theme.textTheme.bodyMedium,
                   decoration: InputDecoration(
-                    hintText: context.watch<LanguageProvider>().getText(
-                      'type_message',
-                    ),
+                    hintText: AppLocalizations.of(context)!.typeMessage,
                     hintStyle: theme.textTheme.bodyMedium?.copyWith(
                       color: context.textSecondary,
                     ),
