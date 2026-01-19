@@ -1,7 +1,8 @@
 class ApiConfig {
   /// Base URL
   static const String baseUrl = 'http://45.156.85.205:8080';
-  static const String antiCheatBaseUrl = 'http://192.168.18.11:5001';
+  // static const String antiCheatBaseUrl = 'http://45.156.85.205:5001';
+  static const String antiCheatBaseUrl = 'http://10.51.131.85:5001';
 
   /// Timeouts
   static const Duration connectTimeout = Duration(seconds: 30);

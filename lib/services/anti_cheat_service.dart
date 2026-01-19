@@ -20,12 +20,14 @@ class AntiCheatService {
   final _cheatingAlertController = StreamController<Map<String, dynamic>>.broadcast();
   final _autoSubmitController = StreamController<String>.broadcast();
   final _connectionChangeController = StreamController<bool>.broadcast();
+  final _debugController = StreamController<String>.broadcast();
   
   // Stream Getters
   Stream<Map<dynamic, dynamic>> get statusStream => _statusController.stream;
   Stream<Map<String, dynamic>> get cheatingAlertStream => _cheatingAlertController.stream;
   Stream<String> get autoSubmitStream => _autoSubmitController.stream;
   Stream<bool> get connectionChangeStream => _connectionChangeController.stream;
+  Stream<String> get debugStream => _debugController.stream;
 
   bool get isConnected => _isConnected;
 
@@ -39,18 +41,22 @@ class AntiCheatService {
 
     _socket!.onConnect((_) {
       debugPrint('AC: Connected to anti-cheat service');
+      _addDebugLog('Connected to Anti-Cheat Service');
       _isConnected = true;
       _connectionChangeController.add(true);
     });
 
+
     _socket!.onDisconnect((_) {
       debugPrint('AC: Disconnected');
+      _addDebugLog('Disconnected from Anti-Cheat Service');
       _isConnected = false;
       _connectionChangeController.add(false);
     });
 
     _socket!.on('cheating_alert', (data) {
       debugPrint('AC: Cheating Alert: $data');
+      _addDebugLog('EVENT: cheating_alert -> $data');
       if (data is Map) {
          // reconstruct cleaner map
          final detail = data['detail']?.toString() ?? 'Violation';
@@ -66,6 +72,7 @@ class AntiCheatService {
     });
 
     _socket!.on('status', (data) {
+      // _addDebugLog('EVENT: status -> $data'); // Too noisy? currently disabled
       if (data is Map) {
         _statusController.add(data);
       }
@@ -73,6 +80,7 @@ class AntiCheatService {
 
     _socket!.on('auto_submit', (data) {
       debugPrint('AC: Auto Submit: $data');
+      _addDebugLog('EVENT: auto_submit -> $data');
       if (data is Map && data.containsKey('detail')) {
         _autoSubmitController.add(data['detail'].toString());
       }
@@ -80,12 +88,27 @@ class AntiCheatService {
     
     _socket!.onConnectError((data) {
       debugPrint('AC: Connection Error: $data');
+      _addDebugLog('ERROR: Connection Error: $data');
+    });
+
+    _socket!.onAny((event, data) {
+       if (event != 'status' && event != 'processed_frame') {
+          _addDebugLog('ANY: $event -> $data');
+       }
     });
   }
 
   void connect() {
     if (_socket != null && !_socket!.connected) {
       _socket!.connect();
+    }
+  }
+
+  void startExamSession() {
+    if (_isConnected && _socket != null) {
+      _socket!.emit('start_exam', {});
+      debugPrint('AC: Signal Sent -> start_exam');
+      _addDebugLog('Signal Sent: start_exam');
     }
   }
 
@@ -98,9 +121,18 @@ class AntiCheatService {
   void sendFrame(String base64Frame) {
     if (_isConnected && _socket != null) {
       _socket!.emit('send_frame', base64Frame);
+       // Optional throttle log
+       // _addDebugLog('Sent frame'); 
     } else {
       debugPrint("AC: Frame dropped - Not connected");
+      _addDebugLog('Frame dropped - Not connected');
     }
+  }
+
+  void _addDebugLog(String log) {
+    // Add timestamp?
+    final time = DateTime.now().toIso8601String().split('T').last.split('.').first;
+    _debugController.add("[$time] $log");
   }
   
   void dispose() {

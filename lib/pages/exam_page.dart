@@ -42,11 +42,16 @@ class _ExamPageState extends State<ExamPage> {
   int _maxViolations = 3;
   String _liveStatus = ""; // Initialized in initState
   Color _liveStatusColor = Colors.grey;
+  
+  // Debug
+  String _debugLog = "";
+  StreamSubscription? _debugSub;
 
   // Stream Subscriptions
   StreamSubscription? _statusSub;
   StreamSubscription? _alertSub;
   StreamSubscription? _autoSubmitSub;
+  StreamSubscription? _connSub;
 
   void initState() {
     super.initState();
@@ -68,6 +73,22 @@ class _ExamPageState extends State<ExamPage> {
     // Singleton instance automatically retrieved
     _antiCheatService.init(); // Checks internal flag
     _antiCheatService.connect(); // Checks connected status
+    
+    // Robustly start exam session
+    // 1. If already connected, send signal immediately
+    if (_antiCheatService.isConnected) {
+       _antiCheatService.startExamSession();
+    }
+
+    // 2. Listen for connection changes (reconnects or initial connect)
+    // to ensure we resend the signal if connection drops and comes back
+    _connSub = _antiCheatService.connectionChangeStream.listen((connected) {
+      if (!mounted) return;
+      if (connected) {
+        debugPrint("ExamPage: Connected, sending start_exam signal");
+        _antiCheatService.startExamSession();
+      }
+    });
     
     _alertSub = _antiCheatService.cheatingAlertStream.listen((data) {
       if (!mounted) return;
@@ -117,6 +138,15 @@ class _ExamPageState extends State<ExamPage> {
          _liveStatusColor = color;
        });
     });
+    
+    _debugSub = _antiCheatService.debugStream.listen((log) {
+      if (mounted) {
+        setState(() {
+          // Keep only last line for exam page to avoid clutter
+          _debugLog = log; 
+        });
+      }
+    });
   }
 
   void _showErrorDialog(String message) {
@@ -147,6 +177,8 @@ class _ExamPageState extends State<ExamPage> {
     _statusSub?.cancel();
     _alertSub?.cancel();
     _autoSubmitSub?.cancel();
+    _connSub?.cancel();
+    _debugSub?.cancel();
     super.dispose();
   }
 
@@ -547,7 +579,24 @@ class _ExamPageState extends State<ExamPage> {
                               textAlign: TextAlign.center,
                             ),
                           ),
-                        )
+                        ),
+                        // Debug overlay on camera
+                        if (_debugLog.isNotEmpty)
+                          Positioned(
+                             top: 0,
+                             left: 0,
+                             right: 0,
+                             child: Container(
+                               color: Colors.black54,
+                               padding: const EdgeInsets.all(2),
+                               child: Text(
+                                 _debugLog,
+                                 style: const TextStyle(color: Colors.greenAccent, fontSize: 8),
+                                 maxLines: 2,
+                                 overflow: TextOverflow.ellipsis,
+                               ),
+                             ),
+                          )
                       ],
                     ),
                   ),

@@ -41,6 +41,10 @@ class _ExamPermissionPageState extends State<ExamPermissionPage> with WidgetsBin
   // Frame Processing
   bool _isProcessingFrame = false;
   DateTime _lastFrameTime = DateTime.now();
+  
+  // Debug
+  String _debugLog = "";
+  StreamSubscription? _debugSub;
 
   void initState() {
     super.initState();
@@ -59,6 +63,17 @@ class _ExamPermissionPageState extends State<ExamPermissionPage> with WidgetsBin
   // Stream Subscriptions
   StreamSubscription? _connSub;
   StreamSubscription? _statusSub;
+  
+  @override
+  void dispose() {
+    _cameraController?.dispose();
+    _connSub?.cancel();
+    _statusSub?.cancel();
+    _debugSub?.cancel();
+    super.dispose();
+  }
+  
+
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -140,6 +155,28 @@ class _ExamPermissionPageState extends State<ExamPermissionPage> with WidgetsBin
 
   void _initializeAntiCheat() {
     _antiCheatService.init();
+    
+    _debugSub = _antiCheatService.debugStream.listen((log) {
+      if (mounted) {
+        setState(() {
+          _debugLog = "$log\n$_debugLog";
+          if (_debugLog.length > 500) {
+            _debugLog = _debugLog.substring(0, 500) + "...";
+          }
+        });
+      }
+    });
+    
+    _debugSub = _antiCheatService.debugStream.listen((log) {
+      if (mounted) {
+        setState(() {
+          _debugLog = "$log\n$_debugLog";
+          if (_debugLog.length > 500) {
+            _debugLog = _debugLog.substring(0, 500) + "...";
+          }
+        });
+      }
+    });
     
     // Force reconnect ensures backend recognizes fresh session
     // This fixes the "zombie connection" issue on re-entry
