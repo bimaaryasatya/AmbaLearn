@@ -381,4 +381,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backToCourse => 'Back to Course';
+
+  @override
+  String get whatToLearn => 'What do you want to learn today?';
+
+  @override
+  String get topicPython => 'Python Basics';
+
+  @override
+  String get topicML => 'Machine Learning';
+
+  @override
+  String get topicWeb => 'Web Development';
+
+  @override
+  String teachMeAbout(String topic) {
+    return 'Teach me about $topic';
+  }
+
+  @override
+  String get voiceInput => 'Voice input';
+
+  @override
+  String get sendMessage => 'Send message';
 }

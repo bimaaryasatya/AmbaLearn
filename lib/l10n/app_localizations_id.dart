@@ -380,4 +380,27 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get backToCourse => 'Kembali ke Kursus';
+
+  @override
+  String get whatToLearn => 'Mau belajar apa hari ini?';
+
+  @override
+  String get topicPython => 'Dasar Python';
+
+  @override
+  String get topicML => 'Machine Learning';
+
+  @override
+  String get topicWeb => 'Web Development';
+
+  @override
+  String teachMeAbout(String topic) {
+    return 'Ajarkan saya tentang $topic';
+  }
+
+  @override
+  String get voiceInput => 'Input suara';
+
+  @override
+  String get sendMessage => 'Kirim pesan';
 }

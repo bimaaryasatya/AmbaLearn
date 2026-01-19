@@ -129,5 +129,17 @@
   "correctAnswer": "Jawaban Benar: {answer}",
   "notAnswered": "Tidak dijawab",
   "backToHome": "Kembali ke Beranda",
-  "backToCourse": "Kembali ke Kursus"
+  "backToCourse": "Kembali ke Kursus",
+  "whatToLearn": "Mau belajar apa hari ini?",
+  "topicPython": "Dasar Python",
+  "topicML": "Machine Learning",
+  "topicWeb": "Web Development",
+  "teachMeAbout": "Ajarkan saya tentang {topic}",
+  "@teachMeAbout": {
+    "placeholders": {
+      "topic": { "type": "String" }
+    }
+  },
+  "voiceInput": "Input suara",
+  "sendMessage": "Kirim pesan"
 }

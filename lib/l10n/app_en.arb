@@ -173,5 +173,17 @@
   },
   "notAnswered": "Not answered",
   "backToHome": "Back to Home",
-  "backToCourse": "Back to Course"
+  "backToCourse": "Back to Course",
+  "whatToLearn": "What do you want to learn today?",
+  "topicPython": "Python Basics",
+  "topicML": "Machine Learning",
+  "topicWeb": "Web Development",
+  "teachMeAbout": "Teach me about {topic}",
+  "@teachMeAbout": {
+    "placeholders": {
+      "topic": { "type": "String" }
+    }
+  },
+  "voiceInput": "Voice input",
+  "sendMessage": "Send message"
 }

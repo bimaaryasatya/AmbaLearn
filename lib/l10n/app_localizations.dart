@@ -805,6 +805,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back to Course'**
   String get backToCourse;
+
+  /// No description provided for @whatToLearn.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you want to learn today?'**
+  String get whatToLearn;
+
+  /// No description provided for @topicPython.
+  ///
+  /// In en, this message translates to:
+  /// **'Python Basics'**
+  String get topicPython;
+
+  /// No description provided for @topicML.
+  ///
+  /// In en, this message translates to:
+  /// **'Machine Learning'**
+  String get topicML;
+
+  /// No description provided for @topicWeb.
+  ///
+  /// In en, this message translates to:
+  /// **'Web Development'**
+  String get topicWeb;
+
+  /// No description provided for @teachMeAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'Teach me about {topic}'**
+  String teachMeAbout(String topic);
+
+  /// No description provided for @voiceInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice input'**
+  String get voiceInput;
+
+  /// No description provided for @sendMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Send message'**
+  String get sendMessage;
 }
 
 class _AppLocalizationsDelegate
