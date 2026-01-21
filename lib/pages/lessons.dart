@@ -3,9 +3,12 @@ import 'package:capstone_layout/pages/homepage.dart';
 import 'package:capstone_layout/widgets/chat_bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text/speech_to_text.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
 import '../config/theme_config.dart';
 import '../providers/course_provider.dart';
 import '../models/course_model.dart';
+import '../l10n/app_localizations.dart';
 
 /// LessonsPage - Modern redesign with theme support
 class LessonsPage extends StatefulWidget {
@@ -18,10 +21,15 @@ class LessonsPage extends StatefulWidget {
 class _LessonsPageState extends State<LessonsPage> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final SpeechToText _speechToText = SpeechToText();
+  bool _speechEnabled = false;
+  bool _isListening = false;
+  String _startText = '';
 
   @override
   void initState() {
     super.initState();
+    _initSpeech();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = ModalRoute.of(context)?.settings.arguments;
       if (args is String) {
@@ -33,6 +41,48 @@ class _LessonsPageState extends State<LessonsPage> {
         });
       }
     });
+  }
+
+  void _initSpeech() async {
+    _speechEnabled = await _speechToText.initialize();
+    setState(() {});
+  }
+
+  void _startListening() async {
+    _startText = _messageController.text;
+    await _speechToText.listen(onResult: _onSpeechResult, localeId: "id_ID");
+    setState(() {
+      _isListening = true;
+    });
+  }
+
+  void _stopListening() async {
+    await _speechToText.stop();
+    setState(() {
+      _isListening = false;
+    });
+  }
+
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    setState(() {
+      String newText = result.recognizedWords;
+      if (_startText.isNotEmpty) {
+        _messageController.text = "$_startText $newText";
+      } else {
+        _messageController.text = newText;
+      }
+      _messageController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _messageController.text.length),
+      );
+    });
+  }
+
+  void _toggleListening() {
+    if (_isListening) {
+      _stopListening();
+    } else {
+      _startListening();
+    }
   }
 
   @override
@@ -628,7 +678,7 @@ class _LessonsPageState extends State<LessonsPage> {
                   enabled: !isSending,
                   style: theme.textTheme.bodyMedium,
                   decoration: InputDecoration(
-                    hintText: "Type your message...",
+                    hintText: AppLocalizations.of(context)!.typeMessage,
                     hintStyle: theme.textTheme.bodyMedium?.copyWith(
                       color: context.textSecondary,
                     ),
@@ -651,13 +701,20 @@ class _LessonsPageState extends State<LessonsPage> {
             // Mic Button
             Container(
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.1),
+                color: _isListening
+                    ? Colors.redAccent.withOpacity(0.2)
+                    : theme.colorScheme.primary.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.mic_rounded, color: theme.colorScheme.primary),
-                tooltip: "Voice input (coming soon)",
+                onPressed: _speechEnabled ? _toggleListening : null,
+                icon: Icon(
+                  _isListening ? Icons.stop_rounded : Icons.mic_rounded,
+                  color: _isListening
+                      ? Colors.redAccent
+                      : theme.colorScheme.primary,
+                ),
+                tooltip: AppLocalizations.of(context)!.voiceInput,
               ),
             ),
             const SizedBox(width: 8),
@@ -693,7 +750,7 @@ class _LessonsPageState extends State<LessonsPage> {
                         ),
                       )
                     : const Icon(Icons.send_rounded, color: Colors.white),
-                tooltip: "Send message",
+                tooltip: AppLocalizations.of(context)!.sendMessage,
               ),
             ),
           ],
