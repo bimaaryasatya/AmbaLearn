@@ -30,8 +30,8 @@ AmbaLearn is a comprehensive learning platform built with Flutter. It provides a
 ### Steps
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/ambalearn.git
-   cd ambalearn
+   git clone https://github.com/YusufDW1/AmbaLearn.git
+   cd AmbaLearn
    ```
 
 2. **Install dependencies**
