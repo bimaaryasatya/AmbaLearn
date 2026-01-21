@@ -50,10 +50,7 @@ class ChatBubble extends StatelessWidget {
       spans.add(
         TextSpan(
           text: url,
-          style: baseStyle.copyWith(
-            color: isUser ? Colors.white : Colors.blue,
-            decoration: TextDecoration.underline,
-          ),
+          style: baseStyle.copyWith(color: isUser ? Colors.white : Colors.blue),
           recognizer: TapGestureRecognizer()
             ..onTap = () async {
               final uri = Uri.parse(url);
