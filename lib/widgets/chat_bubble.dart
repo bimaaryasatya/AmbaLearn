@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -27,6 +28,47 @@ class ChatBubble extends StatelessWidget {
       return match.group(1);
     }
     return null;
+  }
+
+  List<TextSpan> _linkify(String text, TextStyle baseStyle) {
+    final RegExp linkRegExp = RegExp(
+      r"(https?:\/\/[^\s]+)",
+      caseSensitive: false,
+    );
+    final List<TextSpan> spans = [];
+    int lastMatchEnd = 0;
+    for (final Match match in linkRegExp.allMatches(text)) {
+      if (match.start > lastMatchEnd) {
+        spans.add(
+          TextSpan(
+            text: text.substring(lastMatchEnd, match.start),
+            style: baseStyle,
+          ),
+        );
+      }
+      final String url = match.group(0)!;
+      spans.add(
+        TextSpan(
+          text: url,
+          style: baseStyle.copyWith(
+            color: isUser ? Colors.white : Colors.blue,
+            decoration: TextDecoration.underline,
+          ),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () async {
+              final uri = Uri.parse(url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            },
+        ),
+      );
+      lastMatchEnd = match.end;
+    }
+    if (lastMatchEnd < text.length) {
+      spans.add(TextSpan(text: text.substring(lastMatchEnd), style: baseStyle));
+    }
+    return spans;
   }
 
   @override
@@ -99,15 +141,19 @@ class ChatBubble extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SelectableText(
-                      message,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: isUser
-                            ? Colors.white
-                            : (isDark
-                                  ? AppColors.darkTextPrimary
-                                  : AppColors.lightTextPrimary),
-                        height: 1.5,
+                    SelectableText.rich(
+                      TextSpan(
+                        children: _linkify(
+                          message,
+                          theme.textTheme.bodyMedium!.copyWith(
+                            color: isUser
+                                ? Colors.white
+                                : (isDark
+                                      ? AppColors.darkTextPrimary
+                                      : AppColors.lightTextPrimary),
+                            height: 1.5,
+                          ),
+                        ),
                       ),
                     ),
                     if (time != null) ...[
