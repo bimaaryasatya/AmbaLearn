@@ -1,6 +1,6 @@
-# AmbaLearn Mobile 📱
+# AmbaLearn 📱
 
-AmbaLearn Mobile is a comprehensive learning platform built with Flutter. It provides an interactive learning experience with features like AI-powered chat assistants, course management, and a robust examination system.
+AmbaLearn is a comprehensive learning platform built with Flutter. It provides an interactive learning experience with features like AI-powered chat assistants, course management, and a robust examination system.
 
 ## ✨ Key Features
 
@@ -30,8 +30,8 @@ AmbaLearn Mobile is a comprehensive learning platform built with Flutter. It pro
 ### Steps
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/ambalearn-mobile.git
-   cd ambalearn-mobile
+   git clone https://github.com/your-username/ambalearn.git
+   cd ambalearn
    ```
 
 2. **Install dependencies**
@@ -58,5 +58,3 @@ lib/
 ```
 
 ---
-
-*Developed with ❤️ as part of Capstone Project.*
