@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../config/theme_config.dart';
 import '../providers/chat_provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/auth_provider.dart'; // Import AuthProvider
 import '../pages/user_settings_page.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -314,30 +315,31 @@ class AppDrawer extends StatelessWidget {
 
   Widget _buildProfileSection(BuildContext context, ThemeData theme) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final auth = context.watch<AuthProvider>();
+    final user = auth.user;
+
     return Padding(
       padding: EdgeInsets.fromLTRB(12, 12, 12, 12 + bottomPadding),
       child: ListTile(
-        leading: Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
-            ),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Icon(Icons.person_rounded, color: Colors.white),
+        leading: CircleAvatar(
+          radius: 22,
+          backgroundColor: theme.colorScheme.primary,
+          backgroundImage:
+              (user?.picture != null && user!.picture.startsWith('http'))
+              ? NetworkImage(user.picture)
+              : null,
+          child: (user?.picture == null || !user!.picture.startsWith('http'))
+              ? const Icon(Icons.person_rounded, color: Colors.white)
+              : null,
         ),
         title: Text(
-          "Profile",
+          user?.username ?? "Guest",
           style: theme.textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),
         subtitle: Text(
-          "View settings",
+          user?.organizationName ?? "No Organization",
           style: theme.textTheme.bodySmall?.copyWith(
             color: context.textSecondary,
           ),

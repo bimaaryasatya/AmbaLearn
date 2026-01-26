@@ -4,6 +4,8 @@ import '../config/theme_config.dart';
 import '../providers/course_provider.dart';
 import '../models/course_model.dart';
 
+import '../providers/auth_provider.dart';
+
 class CoursesPage extends StatefulWidget {
   const CoursesPage({super.key});
 
@@ -18,7 +20,10 @@ class _CoursesPageState extends State<CoursesPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CourseProvider>().loadCourses();
+      final user = context.read<AuthProvider>().user;
+      context.read<CourseProvider>().loadCourses(
+        organizationId: user?.organizationId,
+      );
     });
   }
 
@@ -208,27 +213,102 @@ class _CoursesPageState extends State<CoursesPage> {
             );
           }
 
-          // Empty state
-          if (provider.courses.isEmpty) {
+          // Empty state when both are empty
+          if (provider.courses.isEmpty &&
+              provider.organizationCourses.isEmpty) {
             return _buildEmptyState(theme);
           }
 
-          // Course grid
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-            child: GridView.builder(
-              itemCount: provider.courses.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 0.75,
-              ),
-              itemBuilder: (context, index) {
-                final course = provider.courses[index];
-                return _buildCourseCard(course, theme);
-              },
-            ),
+          return CustomScrollView(
+            slivers: [
+              // 1. Personal Courses Section
+              if (provider.courses.isNotEmpty) ...[
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                  sliver: SliverToBoxAdapter(
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.person_outline_rounded,
+                          size: 20,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          "Personal Courses",
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverGrid(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 0.75,
+                        ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final course = provider.courses[index];
+                      return _buildCourseCard(course, theme);
+                    }, childCount: provider.courses.length),
+                  ),
+                ),
+              ],
+
+              // 2. Organization Courses Section
+              if (provider.organizationCourses.isNotEmpty) ...[
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 12),
+                  sliver: SliverToBoxAdapter(
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.business_rounded,
+                          size: 20,
+                          color: theme.colorScheme.secondary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          "Organization Courses",
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverGrid(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 0.75,
+                        ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final course = provider.organizationCourses[index];
+                      return _buildCourseCard(
+                        course,
+                        theme,
+                        isOrganizationCourse: true,
+                      );
+                    }, childCount: provider.organizationCourses.length),
+                  ),
+                ),
+              ],
+
+              const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
+            ],
           );
         },
       ),
@@ -276,7 +356,11 @@ class _CoursesPageState extends State<CoursesPage> {
     );
   }
 
-  Widget _buildCourseCard(Course course, ThemeData theme) {
+  Widget _buildCourseCard(
+    Course course,
+    ThemeData theme, {
+    bool isOrganizationCourse = false,
+  }) {
     // Difficulty colors
     Color difficultyColor;
     IconData difficultyIcon;
@@ -302,7 +386,11 @@ class _CoursesPageState extends State<CoursesPage> {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          Navigator.pushNamed(context, '/lessons', arguments: course.uid);
+          if (isOrganizationCourse) {
+            _showEnrollDialog(course);
+          } else {
+            Navigator.pushNamed(context, '/lessons', arguments: course.uid);
+          }
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -334,7 +422,7 @@ class _CoursesPageState extends State<CoursesPage> {
                         ),
                       ),
                     ),
-                    // Center icon
+                    // Center icon OR Action Icon for Organization
                     Center(
                       child: Container(
                         padding: const EdgeInsets.all(16),
@@ -342,8 +430,10 @@ class _CoursesPageState extends State<CoursesPage> {
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Icon(
-                          Icons.menu_book_rounded,
+                        child: Icon(
+                          isOrganizationCourse
+                              ? Icons.add_circle_outline_rounded
+                              : Icons.menu_book_rounded,
                           size: 32,
                           color: Colors.white,
                         ),
@@ -421,6 +511,59 @@ class _CoursesPageState extends State<CoursesPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showEnrollDialog(Course course) {
+    final provider = context.read<CourseProvider>();
+    final isAlreadyEnrolled = provider.courses.any((c) => c.uid == course.uid);
+
+    if (isAlreadyEnrolled) {
+      Navigator.pushNamed(context, '/lessons', arguments: course.uid);
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Enroll in Course"),
+        content: Text(
+          "Do you want to enroll in '${course.courseTitle}'? This will add it to your personal courses.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog
+
+              final auth = context.read<AuthProvider>();
+              final provider = context.read<CourseProvider>();
+
+              if (auth.user?.organizationId == null) return;
+
+              final success = await provider.enrollOrganizationCourse(
+                auth.user!.organizationId!,
+                course.uid,
+              );
+
+              if (success && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text("Enrolled successfully!"),
+                    backgroundColor: Theme.of(context)
+                        .colorScheme
+                        .primary, // Using primary color which is usually green/success in this theme logic or just a brand color
+                  ),
+                );
+              }
+            },
+            child: const Text("Enroll"),
+          ),
+        ],
       ),
     );
   }

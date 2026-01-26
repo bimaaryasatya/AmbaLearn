@@ -5,7 +5,17 @@ import '../models/user_model.dart';
 
 class AuthProvider extends ChangeNotifier {
   User? _user;
-  bool _isLoading = false;
+  bool _isLoading = true;
+
+  AuthProvider() {
+    tryAutoLogin();
+  }
+
+  Future<void> tryAutoLogin() async {
+    await fetchCurrentUser();
+    _isLoading = false;
+    notifyListeners();
+  }
 
   User? get user => _user;
   bool get isLoggedIn => _user != null;
@@ -150,9 +160,61 @@ class AuthProvider extends ChangeNotifier {
       await _api.post(ApiConfig.logout);
     } catch (_) {}
 
+    await _api.logoutGoogle();
     await _api.clearCookies();
 
     _user = null;
     notifyListeners();
+  }
+
+  // JOIN ORGANIZATION
+  Future<String?> joinOrganization(String invitationCode) async {
+    _setLoading(true);
+    try {
+      final res = await _api.post(
+        ApiConfig.joinOrganization,
+        data: {"invitation_code": invitationCode},
+      );
+
+      if (res.statusCode == 200) {
+        // Success: response contains updated user json
+        _user = User.fromJson(res.data);
+        notifyListeners();
+        return null; // No error
+      }
+
+      if (res.data != null && res.data['error'] != null) {
+        return res.data['error'];
+      }
+      return "Gagal bergabung ke organisasi";
+    } catch (e) {
+      return "Terjadi kesalahan: $e";
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // LEAVE ORGANIZATION
+  Future<String?> leaveOrganization() async {
+    _setLoading(true);
+    try {
+      final res = await _api.post(ApiConfig.leaveOrganization);
+
+      if (res.statusCode == 200) {
+        // Success: response contains updated user json
+        _user = User.fromJson(res.data);
+        notifyListeners();
+        return null;
+      }
+
+      if (res.data != null && res.data['error'] != null) {
+        return res.data['error'];
+      }
+      return "Gagal keluar dari organisasi";
+    } catch (e) {
+      return "Terjadi kesalahan: $e";
+    } finally {
+      _setLoading(false);
+    }
   }
 }

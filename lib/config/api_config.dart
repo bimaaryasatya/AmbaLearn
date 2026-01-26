@@ -20,6 +20,8 @@ class ApiConfig {
 
   /// User
   static const String updateUser = '/user/update';
+  static const String joinOrganization = '/organization/join';
+  static const String leaveOrganization = '/organization/leave';
 
   /// Courses
   static const String courses = '/courses';
@@ -30,6 +32,10 @@ class ApiConfig {
   static String courseFeedback(String uid) => '/course/$uid/feedback';
 
   /// Exam
+  static String organizationCourses(String orgId) =>
+      '/organization/$orgId/courses';
+  static String enrollOrganizationCourse(String orgId, String courseId) =>
+      '/organization/$orgId/course/$courseId/enroll';
   static String courseExam(String uid) => '/course/$uid/exam';
   static String submitCourseExam(String uid) => '/course/$uid/exam/submit';
 
