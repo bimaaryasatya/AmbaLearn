@@ -1,9 +1,8 @@
 class ApiConfig {
   /// Base URL
-  static const String baseUrl = 'http://127.0.0.1:8080';
-  // static const String baseUrl = 'http://192.168.1.8:8080';
-  // static const String baseUrl = 'http://45.156.85.205:8080';
-  static const String antiCheatBaseUrl = 'http://45.156.85.205:5001';
+  static const String baseUrl = 'http://45.156.85.205:8080';
+  static const String antiCheatBaseUrl =
+      'https://antarctica-citations-economies-unix.trycloudflare.com';
 
   /// Timeouts
   static const Duration connectTimeout = Duration(seconds: 30);

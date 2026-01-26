@@ -63,12 +63,16 @@ class _RegisterPageState extends State<RegisterPage>
                 ? [
                     AppColors.darkBackground,
                     AppColors.darkSurface,
-                    AppColors.darkAccent.withOpacity(0.2),
+                    AppColors.darkAccent.withValues(
+                      alpha: 0.2,
+                    ), // Fixed deprecated
                   ]
                 : [
                     AppColors.lightBackground,
                     AppColors.lightSurface,
-                    AppColors.lightAccent.withOpacity(0.1),
+                    AppColors.lightAccent.withValues(
+                      alpha: 0.1,
+                    ), // Fixed deprecated
                   ],
           ),
         ),
@@ -112,7 +116,7 @@ class _RegisterPageState extends State<RegisterPage>
             ),
             boxShadow: [
               BoxShadow(
-                color: theme.colorScheme.secondary.withOpacity(0.4),
+                color: theme.colorScheme.secondary.withValues(alpha: 0.4),
                 blurRadius: 30,
                 spreadRadius: 5,
               ),
@@ -154,15 +158,15 @@ class _RegisterPageState extends State<RegisterPage>
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
               color: isDark
-                  ? AppColors.darkSurface.withOpacity(0.8)
-                  : AppColors.lightSurface.withOpacity(0.9),
+                  ? AppColors.darkSurface.withValues(alpha: 0.8)
+                  : AppColors.lightSurface.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
                 color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -273,8 +277,9 @@ class _RegisterPageState extends State<RegisterPage>
                 const SizedBox(height: 24),
 
                 // Login Link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(
                       "${AppLocalizations.of(context)!.alreadyAccount} ",

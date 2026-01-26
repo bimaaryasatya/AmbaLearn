@@ -12,7 +12,6 @@ class AppDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final chat = context.watch<ChatProvider>();
     final theme = Theme.of(context);
-    final isDark = context.isDarkMode;
 
     return Drawer(
       backgroundColor: context.surfaceColor,
@@ -45,7 +44,6 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
           ),
-
 
           const SizedBox(height: 8),
 
