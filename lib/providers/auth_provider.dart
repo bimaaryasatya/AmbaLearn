@@ -5,7 +5,17 @@ import '../models/user_model.dart';
 
 class AuthProvider extends ChangeNotifier {
   User? _user;
-  bool _isLoading = false;
+  bool _isLoading = true;
+
+  AuthProvider() {
+    tryAutoLogin();
+  }
+
+  Future<void> tryAutoLogin() async {
+    await fetchCurrentUser();
+    _isLoading = false;
+    notifyListeners();
+  }
 
   User? get user => _user;
   bool get isLoggedIn => _user != null;

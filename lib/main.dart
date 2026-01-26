@@ -22,8 +22,11 @@ import 'pages/user_settings_page.dart';
 import 'pages/courses.dart';
 import 'pages/lessons.dart';
 
+import 'services/api_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await ApiService().init();
 
   final themeProvider = ThemeProvider();
   await themeProvider.init();

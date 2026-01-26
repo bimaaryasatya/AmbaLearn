@@ -6,17 +6,16 @@ import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import '../config/api_config.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
+import '../utils/cookie_storage.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
 
   late Dio dio;
-  late CookieJar cookieJar;
+  late PersistCookieJar cookieJar;
 
   ApiService._internal() {
-    cookieJar = CookieJar();
-
     dio = Dio(
       BaseOptions(
         baseUrl: ApiConfig.baseUrl,
@@ -31,11 +30,20 @@ class ApiService {
     );
 
     // Cookie manager
-    if (!kIsWeb) {
-      dio.interceptors.add(CookieManager(cookieJar));
-    }
+    // Cookie manager will be initialized in init()
+    // if (!kIsWeb) {
+    //   dio.interceptors.add(CookieManager(cookieJar));
+    // }
 
     dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
+  }
+
+  Future<void> init() async {
+    // Web handles cookies automatically via browser
+    if (!kIsWeb) {
+      cookieJar = PersistCookieJar(storage: CookieStorage());
+      dio.interceptors.add(CookieManager(cookieJar));
+    }
   }
 
   // GENERIC GET

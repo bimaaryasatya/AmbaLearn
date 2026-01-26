@@ -69,6 +69,9 @@ class MockAuthProvider extends ChangeNotifier implements AuthProvider {
   Future<String?> leaveOrganization() async {
     return null; // success
   }
+
+  @override
+  Future<void> tryAutoLogin() async {}
 }
 
 class MockChatProvider extends ChangeNotifier implements ChatProvider {
