@@ -160,6 +160,7 @@ class AuthProvider extends ChangeNotifier {
       await _api.post(ApiConfig.logout);
     } catch (_) {}
 
+    await _api.logoutGoogle();
     await _api.clearCookies();
 
     _user = null;

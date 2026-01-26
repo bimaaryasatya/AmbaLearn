@@ -74,6 +74,9 @@ class ApiService {
         scopes: ['email', 'profile'],
       );
 
+      // Force account selection/ensure fresh login flow
+      // await googleSignIn.signOut(); // Ensure we are clean before starting, or let signOut handle it on logout.
+
       final googleUser = await googleSignIn.signIn();
       if (googleUser == null) return null;
 
@@ -91,6 +94,18 @@ class ApiService {
     } catch (e, st) {
       log("Google Login Error: $e\n$st");
       return null;
+    }
+  }
+
+  Future<void> logoutGoogle() async {
+    try {
+      final googleSignIn = GoogleSignIn(
+        clientId: ApiConfig.googleClientIdWeb,
+        scopes: ['email', 'profile'],
+      );
+      await googleSignIn.signOut();
+    } catch (e) {
+      log("Google LOGOUT Error: $e");
     }
   }
 
