@@ -3,6 +3,8 @@ class User {
   final String username;
   final String email;
   final String picture;
+  final String? organizationId;
+  final String? organizationName;
   final DateTime? birthday;
   final DateTime? registeredAt;
   final DateTime? lastLogin;
@@ -12,6 +14,8 @@ class User {
     required this.username,
     required this.email,
     required this.picture,
+    this.organizationId,
+    this.organizationName,
     this.birthday,
     this.registeredAt,
     this.lastLogin,
@@ -23,6 +27,8 @@ class User {
       username: json['username'] ?? '',
       email: json['email'] ?? '',
       picture: json['picture'] ?? '',
+      organizationId: json['organization_id']?.toString(), // Nullable
+      organizationName: json['organization_name'], // Nullable
       birthday: json['birthday'] != null
           ? DateTime.parse(json['birthday'])
           : null,

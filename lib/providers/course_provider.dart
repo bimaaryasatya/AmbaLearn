@@ -10,6 +10,7 @@ class CourseProvider extends ChangeNotifier {
 
   // COURSE LIST STATE
   List<Course> _courses = [];
+  List<Course> _organizationCourses = [];
   bool _isLoading = false;
   String? _error;
 
@@ -30,6 +31,7 @@ class CourseProvider extends ChangeNotifier {
 
   // GETTERS - Course List
   List<Course> get courses => _courses;
+  List<Course> get organizationCourses => _organizationCourses;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -49,19 +51,40 @@ class CourseProvider extends ChangeNotifier {
   // COURSE LIST METHODS
 
   /// Load all courses from API
-  Future<void> loadCourses() async {
+  Future<void> loadCourses({String? organizationId}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final response = await _api.get(ApiConfig.courses);
+      // 1. Fetch Personal Courses
+      final personalFuture = _api.get(ApiConfig.courses);
 
-      if (response.statusCode == 200 && response.data != null) {
-        final List list = response.data as List;
+      // 2. Fetch Organization Courses (if applicable)
+      Future<dynamic>? orgFuture;
+      if (organizationId != null && organizationId.isNotEmpty) {
+        orgFuture = _api.get(ApiConfig.organizationCourses(organizationId));
+      }
+
+      final personalResponse = await personalFuture;
+
+      if (personalResponse.statusCode == 200 && personalResponse.data != null) {
+        final List list = personalResponse.data as List;
         _courses = list
             .map((item) => Course.fromJson(item as Map<String, dynamic>))
             .toList();
+      }
+
+      if (orgFuture != null) {
+        final orgResponse = await orgFuture;
+        if (orgResponse.statusCode == 200 && orgResponse.data != null) {
+          final List list = orgResponse.data as List;
+          _organizationCourses = list
+              .map((item) => Course.fromJson(item as Map<String, dynamic>))
+              .toList();
+        }
+      } else {
+        _organizationCourses = [];
       }
     } catch (e) {
       _error = "Failed to load courses: $e";
@@ -98,6 +121,42 @@ class CourseProvider extends ChangeNotifier {
     }
 
     _isGenerating = false;
+    notifyListeners();
+    return false;
+  }
+
+  /// Enroll in an organization course
+  Future<bool> enrollOrganizationCourse(String orgId, String courseUid) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final response = await _api.post(
+        ApiConfig.enrollOrganizationCourse(orgId, courseUid),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Refresh courses to see the newly enrolled course in "Personal Courses"
+        await loadCourses(organizationId: orgId);
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+
+      if (response.data != null && response.data['error'] != null) {
+        _error = response.data['error'];
+      }
+    } catch (e) {
+      if (e.toString().contains("409")) {
+        _error = "You are already enrolled in this course.";
+      } else {
+        _error = "Failed to enroll in course: $e";
+      }
+      debugPrint(_error);
+    }
+
+    _isLoading = false;
     notifyListeners();
     return false;
   }

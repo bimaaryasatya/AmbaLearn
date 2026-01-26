@@ -19,8 +19,7 @@ class UserSettingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final themeProvider = context.watch<ThemeProvider>();
-    final username = auth.user?.username ?? "Guest";
-    final email = auth.user?.email ?? "guest@example.com";
+    final user = auth.user;
     final theme = Theme.of(context);
     final isDark = context.isDarkMode;
 
@@ -43,7 +42,7 @@ class UserSettingPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Profile Card
-            _buildProfileCard(context, theme, isDark, username, email),
+            _buildProfileCard(context, theme, isDark, user),
 
             const SizedBox(height: 32),
 
@@ -60,7 +59,7 @@ class UserSettingPage extends StatelessWidget {
             // Account Section
             _buildSectionTitle(context, AppLocalizations.of(context)!.account),
             const SizedBox(height: 12),
-            _buildAccountOptions(context, theme),
+            _buildAccountOptions(context, theme, auth),
 
             const SizedBox(height: 32),
 
@@ -76,9 +75,12 @@ class UserSettingPage extends StatelessWidget {
     BuildContext context,
     ThemeData theme,
     bool isDark,
-    String username,
-    String email,
+    dynamic user, // User? object
   ) {
+    final username = user?.username ?? "Guest";
+    final email = user?.email ?? "guest@example.com";
+    final picture = user?.picture;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -105,17 +107,25 @@ class UserSettingPage extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(18),
+              image: (picture != null && picture.startsWith('http'))
+                  ? DecorationImage(
+                      image: NetworkImage(picture),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
             ),
-            child: Center(
-              child: Text(
-                username.isNotEmpty ? username[0].toUpperCase() : "G",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            child: (picture == null || !picture.startsWith('http'))
+                ? Center(
+                    child: Text(
+                      username.isNotEmpty ? username[0].toUpperCase() : "G",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
+                : null,
           ),
           const SizedBox(width: 20),
           // Info
@@ -282,7 +292,11 @@ class UserSettingPage extends StatelessWidget {
     );
   }
 
-  Widget _buildAccountOptions(BuildContext context, ThemeData theme) {
+  Widget _buildAccountOptions(
+    BuildContext context,
+    ThemeData theme,
+    AuthProvider auth,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: context.surfaceColor,
@@ -384,6 +398,23 @@ class UserSettingPage extends StatelessWidget {
             },
           ),
           Divider(height: 1, color: context.dividerColor),
+          if (auth.user?.organizationId == null)
+            _buildSettingItem(
+              context: context,
+              theme: theme,
+              icon: Icons.group_add_rounded,
+              title: "Join Organization",
+              onTap: () => _showJoinOrganizationDialog(context, auth),
+            )
+          else
+            _buildSettingItem(
+              context: context,
+              theme: theme,
+              icon: Icons.exit_to_app_rounded,
+              title: "Leave Organization",
+              onTap: () => _showLeaveOrganizationDialog(context, auth),
+            ),
+          Divider(height: 1, color: context.dividerColor),
           _buildSettingItem(
             context: context,
             theme: theme,
@@ -427,6 +458,163 @@ class UserSettingPage extends StatelessWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  void _showLeaveOrganizationDialog(BuildContext context, AuthProvider auth) {
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: const Text("Leave Organization"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Are you sure you want to leave your current organization? You will lose access to organization-specific features.",
+                  style: TextStyle(fontSize: 13),
+                ),
+                if (isLoading)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 16),
+                    child: CircularProgressIndicator(),
+                  ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: isLoading ? null : () => Navigator.pop(ctx),
+                child: Text(AppLocalizations.of(context)!.cancel),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        setState(() => isLoading = true);
+                        final error = await auth.leaveOrganization();
+                        setState(() => isLoading = false);
+
+                        if (error == null) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Successfully left organization."),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(error),
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.error,
+                            ),
+                          );
+                        }
+                      },
+                child: const Text("Leave"),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  void _showJoinOrganizationDialog(BuildContext context, AuthProvider auth) {
+    final TextEditingController controller = TextEditingController();
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: const Text("Join Organization"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Enter the 6-character invitation code provided by your organization manager.",
+                  style: TextStyle(fontSize: 13),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    labelText: "Invitation Code",
+                    hintText: "e.g. X7Y2Z9",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                  ),
+                  textCapitalization: TextCapitalization.characters,
+                ),
+                if (isLoading)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 16),
+                    child: CircularProgressIndicator(),
+                  ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: isLoading ? null : () => Navigator.pop(ctx),
+                child: Text(AppLocalizations.of(context)!.cancel),
+              ),
+              ElevatedButton(
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        final code = controller.text.trim();
+                        if (code.isEmpty) return;
+
+                        setState(() => isLoading = true);
+                        final error = await auth.joinOrganization(code);
+                        setState(() => isLoading = false);
+
+                        if (error == null) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Successfully joined organization!",
+                              ),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(error),
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.error,
+                            ),
+                          );
+                        }
+                      },
+                child: const Text("Join"),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

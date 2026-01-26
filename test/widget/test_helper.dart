@@ -59,6 +59,16 @@ class MockAuthProvider extends ChangeNotifier implements AuthProvider {
   String? validatePassword(String password) => null;
   @override
   String? validateUsername(String username) => null;
+
+  @override
+  Future<String?> joinOrganization(String invitationCode) async {
+    return null; // success
+  }
+
+  @override
+  Future<String?> leaveOrganization() async {
+    return null; // success
+  }
 }
 
 class MockChatProvider extends ChangeNotifier implements ChatProvider {
