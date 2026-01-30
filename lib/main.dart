@@ -42,11 +42,21 @@ void main() async {
 class AmbaLearn extends StatelessWidget {
   final ThemeProvider themeProvider;
   final LanguageProvider languageProvider;
+  final AuthProvider? authProvider;
+  final UserProvider? userProvider;
+  final ChatProvider? chatProvider;
+  final CourseProvider? courseProvider;
+  final ExamProvider? examProvider;
 
   const AmbaLearn({
     super.key,
     required this.themeProvider,
     required this.languageProvider,
+    this.authProvider,
+    this.userProvider,
+    this.chatProvider,
+    this.courseProvider,
+    this.examProvider,
   });
 
   @override
@@ -56,11 +66,13 @@ class AmbaLearn extends StatelessWidget {
         ChangeNotifierProvider.value(value: themeProvider),
         ChangeNotifierProvider.value(value: languageProvider),
 
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => ChatProvider()),
-        ChangeNotifierProvider(create: (_) => CourseProvider()),
-        ChangeNotifierProvider(create: (_) => ExamProvider()),
+        ChangeNotifierProvider(create: (_) => authProvider ?? AuthProvider()),
+        ChangeNotifierProvider(create: (_) => userProvider ?? UserProvider()),
+        ChangeNotifierProvider(create: (_) => chatProvider ?? ChatProvider()),
+        ChangeNotifierProvider(
+          create: (_) => courseProvider ?? CourseProvider(),
+        ),
+        ChangeNotifierProvider(create: (_) => examProvider ?? ExamProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

@@ -1,4 +1,0 @@
-00:00 +0: loading C:/Users/bimazznxt/Desktop/capstone/AmbaLearn/test/widget/homepage_test.dart
-00:00 +0: HomePage displays AppBar and body
-00:01 +1: HomePage opens drawer
-00:01 +2: All tests passed!
