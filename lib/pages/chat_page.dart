@@ -31,8 +31,12 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _initSpeech() async {
-    _speechEnabled = await _speechToText.initialize();
-    setState(() {});
+    try {
+      _speechEnabled = await _speechToText.initialize();
+      if (mounted) setState(() {});
+    } catch (e) {
+      debugPrint("Speech init error: $e");
+    }
   }
 
   void _startListening() async {
@@ -182,9 +186,18 @@ class _ChatPageState extends State<ChatPage> {
               runSpacing: 8,
               alignment: WrapAlignment.center,
               children: [
-                _buildSuggestionChip(AppLocalizations.of(context)!.topicPython, theme),
-                _buildSuggestionChip(AppLocalizations.of(context)!.topicML, theme),
-                _buildSuggestionChip(AppLocalizations.of(context)!.topicWeb, theme),
+                _buildSuggestionChip(
+                  AppLocalizations.of(context)!.topicPython,
+                  theme,
+                ),
+                _buildSuggestionChip(
+                  AppLocalizations.of(context)!.topicML,
+                  theme,
+                ),
+                _buildSuggestionChip(
+                  AppLocalizations.of(context)!.topicWeb,
+                  theme,
+                ),
               ],
             ),
           ],
@@ -203,7 +216,9 @@ class _ChatPageState extends State<ChatPage> {
         color: theme.colorScheme.primary,
       ),
       onPressed: () {
-        _messageController.text = AppLocalizations.of(context)!.teachMeAbout(text);
+        _messageController.text = AppLocalizations.of(
+          context,
+        )!.teachMeAbout(text);
         _sendMessage(chat);
       },
     );
